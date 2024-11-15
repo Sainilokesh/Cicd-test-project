@@ -1,0 +1,28 @@
+trigger:
+- main  # Deploy on changes to the main branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  vmIp: 'your-vm-ip'          # Replace with your VM's public IP
+  vmUser: 'your-vm-username'  # Replace with your VM's username
+  sshKey: 'your-ssh-key'      # Replace with the name of your SSH key in Azure Pipelines
+
+steps:
+- task: UseSSH@0
+  inputs:
+    sshEndpoint: 'your-ssh-endpoint'  # Create an SSH service connection to your VM in Azure DevOps
+    runOptions: 'inline'
+    inline: |
+      # Navigate to the web root directory
+      cd /home/azureuser/Cicd-test-project && sudo git pull && sudo rm -rf /var/www./html/index.nginx-debian.html && sudo cp index.html /var/www/html/index.html
+
+      # Copy files from GitHub repository (using git)
+      git clone https://github.com/yourusername/yourrepo.git .  # Replace with your repository URL
+
+      # Ensure web server can read the files
+      sudo chown -R www-data:www-data /var/www/html
+
+      # Restart the web server to apply changes
+      sudo systemctl restart nginx  # or apache2, depending on what you use
